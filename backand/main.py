@@ -1,10 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Form
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 from typing import List, Optional
-from fastapi import Form
 from fastapi.middleware.cors import CORSMiddleware
 
 DATABASE_URL = "sqlite:///./library.db"
@@ -15,11 +14,11 @@ Base = declarative_base()
 
 class Book(Base):
     __tablename__ = "book"
-    id = Column(Integer,primary_key =True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     author = Column(String, index=True)
     description = Column(String, nullable=True)
-    year = Column(Integer,nullable=True)
+    year = Column(String, nullable=True)
     genre = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
@@ -29,12 +28,14 @@ class BookSchema(BaseModel):
     title: str
     author: str
     description: Optional[str] = None
-    year: Optional[int] = None
+    year: Optional[str] = None
     genre: Optional[str] = None
 
     class Config:
         from_attributes = True
+
 app = FastAPI()
+
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:8000",
@@ -47,6 +48,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 def get_db():
     db = SessionLocal()
     try:
@@ -58,11 +60,11 @@ def get_db():
 async def get_all_books(db: Session = Depends(get_db)):
     return db.query(Book).all()
 
-@app.get("/search_book_by_name_or_author", response_model= List[BookSchema])
+@app.get("/search_book_by_name_or_author", response_model=List[BookSchema])
 async def search_books(
-        title: Optional[str] = Query(None, text="Name book"),
-        author: Optional[str] = Query(None, text="Author"),
-        db: Session = Depends(get_db),
+    title: Optional[str] = Query(None, description="Name book"),
+    author: Optional[str] = Query(None, description="Author"),
+    db: Session = Depends(get_db),
 ):
     query = db.query(Book)
 
@@ -76,34 +78,34 @@ async def search_books(
         raise HTTPException(status_code=404, detail="Book not found")
     return results
 
-@app.post("/add_book", response_model = BookSchema)
+@app.post("/add_book", response_model=BookSchema)
 async def add_books(
-        title: str = Form,
-        author: str = Form,
-        description: str = Form(None),
-        year: int = Form(None),
-        genre: str = Form,
-        db: Session = Depends(get_db),
+    title: str = Form(...),
+    author: str = Form(...),
+    description: Optional[str] = Form(None),
+    year: Optional[str] = Form(None),
+    genre: str = Form(...),
+    db: Session = Depends(get_db),
 ):
     book = Book(
-        title = title,
-        author = author,
-        description = description,
-        year = year,
-        genre = genre,
+        title=title,
+        author=author,
+        description=description,
+        year=year,
+        genre=genre,
     )
     db.add(book)
     db.commit()
     db.refresh(book)
     return book
 
-@app.put("/edit_book/{book_id}", response_model = BookSchema)
+@app.put("/edit_book/{book_id}", response_model=BookSchema)
 async def edit_book(
-        book_id: int,
-        book: BookSchema,
-        db: Session = Depends(get_db),
+    book_id: int,
+    book: BookSchema,
+    db: Session = Depends(get_db),
 ):
-    existing_book = db.query(Book). filter(Book.id == book_id).first()
+    existing_book = db.query(Book).filter(Book.id == book_id).first()
 
     if existing_book is None:
         raise HTTPException(status_code=404, detail="Book not found")
@@ -125,4 +127,4 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Book not found")
     db.delete(book)
     db.commit()
-    return {f"Book deleted"}
+    return {"message": "Book deleted"}

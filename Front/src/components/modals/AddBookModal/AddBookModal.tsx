@@ -135,7 +135,7 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
                      name="author"
                      value={formData.author}
                      onChange={handleInputChange}
-                     placeholder="Enter price"
+                     placeholder="Enter Author"
                   />
                </Form.Group>
                <Form.Group className="mb-3 d-flex">
