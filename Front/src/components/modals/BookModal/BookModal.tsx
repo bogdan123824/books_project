@@ -42,7 +42,7 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
    const handleEdit = () => {
       setFormData({
          title: book.title,
-         author: book.title,
+         author: book.author,
          description: book.description,
          year: book.year,
          genre: book.genre
@@ -62,8 +62,25 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
       setLoading(true);
       if (currentState === "edit") {
          try {
-            await axios.put(`${apiUrl}/edit_book/${book.id}`, {
-               ...formData
+            const data = {
+               title: formData.title,
+               author: formData.author,
+               description: formData.description,
+               year: formData.year,
+               genre: formData.genre,
+            };
+      
+            const params = new URLSearchParams();
+            params.append('title', data.title);
+            params.append('author', data.author);
+            params.append('description', data.description);
+            params.append('year', data.year.toString());
+            params.append('genre', data.genre);
+      
+            await axios.put(`${apiUrl}/edit_book/${book.id}`, params, {
+               headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+               },
             });
             onBookUpdated();
 

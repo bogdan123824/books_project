@@ -47,20 +47,33 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
 
    const handleConfirm = async () => {
       setLoading(true);
-
+   
       try {
-         const response = await axios.post(`${apiUrl}/add_book`, {
+         const data = {
             title: formData.title,
-            author: formData.title,
+            author: formData.author,
             description: formData.description,
             year: formData.year,
-            genre: formData.genre
+            genre: formData.genre,
+         };
+   
+         const params = new URLSearchParams();
+         params.append('title', data.title);
+         params.append('author', data.author);
+         params.append('description', data.description);
+         params.append('year', data.year.toString());
+         params.append('genre', data.genre);
+   
+         const response = await axios.post(`${apiUrl}/add_book`, params, {
+            headers: {
+               'Content-Type': 'application/x-www-form-urlencoded',
+            },
          });
-
+   
          if (onBookUpdated) {
             onBookUpdated(response.data);
          }
-
+   
          handleClear();
          handleClose();
       } catch (error) {
