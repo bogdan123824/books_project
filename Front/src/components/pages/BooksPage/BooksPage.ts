@@ -30,3 +30,10 @@ color: white;
 margin: 0;
 margin-left: 8px;
 `;
+
+export const BooksSortContainer = styled.div`
+display: flex;
+justify-content: space-between;
+margin-top: 18px;
+align-items: center;
+`;

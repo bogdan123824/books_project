@@ -4,22 +4,21 @@ import {
    BooksPageContainer,
    ButtonsContainer,
    BooksHeaderContainer,
-   BooksHeader
+   BooksHeader,
+   BooksSortContainer
 } from './BooksPage.ts';
 import axios from 'axios';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowsRotate, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faArrowsRotate, faPlus, faBook } from '@fortawesome/free-solid-svg-icons'
 
-import { Table, Button, Spinner } from 'react-bootstrap';
+import { Table, Button, Spinner, Dropdown, DropdownButton, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import BookModal from '../../modals/BookModal/BookModal.tsx';
 import AddBookModal from '../../modals/AddBookModal/AddBookModal.tsx';
 
 import { apiUrl } from '../../config.ts';
-
-import booksData from '../../books.json';
 
 interface BooksPageProps { }
 
@@ -36,6 +35,9 @@ const BooksPage: FC<BooksPageProps> = () => {
    const [books, setBooks] = useState<Book[]>([]);
    const [selectedBook, setSelectedBook] = useState(null);
 
+   const [sortBy, setSortBy] = useState("author");
+   const [filter, setFilter] = useState("");
+
    const [loading, setLoading] = useState(false);
 
    const [showEditModal, setShowEditModal] = useState(false);
@@ -48,8 +50,6 @@ const BooksPage: FC<BooksPageProps> = () => {
          const response = await axios.get<Book[]>(`${apiUrl}/all_books/`);
 
          setBooks(response.data);
-
-         //setBooks(booksData);
       } catch (error) {
          console.error('Error fetching books:', error);
       } finally {
@@ -83,11 +83,63 @@ const BooksPage: FC<BooksPageProps> = () => {
       setShowAddModal(true);
    };
 
+   const handleSelect = (eventKey: string | null) => {
+      if (eventKey) {
+         setSortBy(eventKey);
+      }
+   };
+
+   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFilter(e.target.value);
+   };
+
+   const sortedAndFilteredBooks = books
+      .filter((book) => {
+         const lowerCaseFilter = filter.toLowerCase();
+         return (
+            book.title.toLowerCase().includes(lowerCaseFilter) || book.author.toLowerCase().includes(lowerCaseFilter)
+         );
+      })
+      .sort((a, b) => {
+         if (sortBy === "author") {
+            return a.author.localeCompare(b.author);
+         }
+         if (sortBy === "title") {
+            return a.title.localeCompare(b.title);
+         }
+         return 0;
+      });
+
    return (
       <BooksPageWrapper>
          <BooksPageContainer>
+            <BooksHeader><FontAwesomeIcon icon={faBook} />  Books management</BooksHeader>
             <BooksHeaderContainer>
-               <BooksHeader>Books management</BooksHeader>
+               <BooksSortContainer>
+                  <BooksHeader style={{ fontSize: "95%" }}>Sort by</BooksHeader>
+                  <DropdownButton
+                     id="sort-dropdown"
+                     title={sortBy}
+                     onSelect={handleSelect}
+                     variant="dark"
+                     menuVariant="dark"
+                     style={{
+                        marginLeft: "12px"
+                     }}
+                  >
+                     <Dropdown.Item eventKey="author">author</Dropdown.Item>
+                     <Dropdown.Item eventKey="title">title</Dropdown.Item>
+                  </DropdownButton>
+                  <Form.Group>
+                     <Form.Control
+                        type="text"
+                        placeholder="Filter..."
+                        value={filter}
+                        onChange={handleInputChange}
+                        style={{ maxWidth: '300px', marginLeft: "12px" }}
+                     />
+                  </Form.Group>
+               </BooksSortContainer>
                <ButtonsContainer>
                   <Button variant="success" onClick={handleAddModal} style={{ marginRight: "12px" }}><FontAwesomeIcon icon={faPlus} /></Button>
                   <Button variant="dark" onClick={fetchBooks}><FontAwesomeIcon icon={faArrowsRotate} /></Button>
@@ -116,17 +168,17 @@ const BooksPage: FC<BooksPageProps> = () => {
                      </tr>
                   </thead>
                   <tbody>
-                     {books.map((book) => (
+                     {sortedAndFilteredBooks.map((book) => (
                         <tr
                            key={book.id}
                            onClick={() => handleRowClick(book)}
                            style={{
-                              cursor: 'pointer'
+                              cursor: 'pointer',
                            }}
                         >
                            <td>{book.title}</td>
                            <td>{book.author}</td>
-                           <td style={{whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "340px"}}>{book.description}</td>
+                           <td style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "340px"}}>{book.description}</td>
                            <td>{book.year}</td>
                            <td>{book.genre}</td>
                         </tr>
