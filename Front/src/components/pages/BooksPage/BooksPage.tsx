@@ -29,6 +29,7 @@ type Book = {
    author: string;
    description: string | null;
    year: number;
+   genre: string;
 };
 
 const BooksPage: FC<BooksPageProps> = () => {
@@ -111,6 +112,7 @@ const BooksPage: FC<BooksPageProps> = () => {
                         <th>Author</th>
                         <th>Description</th>
                         <th>Year</th>
+                        <th>Genre</th>
                      </tr>
                   </thead>
                   <tbody>
@@ -126,6 +128,7 @@ const BooksPage: FC<BooksPageProps> = () => {
                            <td>{book.author}</td>
                            <td style={{whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "340px"}}>{book.description}</td>
                            <td>{book.year}</td>
+                           <td>{book.genre}</td>
                         </tr>
                      ))}
                   </tbody>

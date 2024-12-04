@@ -15,6 +15,7 @@ type FormData = {
    author: string;
    description: string;
    year: number;
+   genre: string;
 };
 
 const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
@@ -26,7 +27,8 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
       title: "",
       author: "",
       description: "",
-      year: 0
+      year: 0,
+      genre: ""
    });
 
    useEffect(() => {
@@ -42,7 +44,8 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
          title: book.title,
          author: book.title,
          description: book.description,
-         year: book.year
+         year: book.year,
+         genre: book.genre
       });
       setCurrentState("edit");
    };
@@ -160,6 +163,16 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
                         placeholder="Enter year"
                      />
                   </Form.Group>
+                  <Form.Group className="mb-3 d-flex">
+                  <Form.Label className="me-2">Genre:</Form.Label>
+                  <Form.Control
+                     type="text"
+                     name="genre"
+                     value={formData.genre}
+                     onChange={handleInputChange}
+                     placeholder="Enter genre"
+                  />
+               </Form.Group>
                </Form>
             </Modal.Body>
          ) : (
@@ -168,6 +181,7 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
                <p><strong>Author:</strong> {book?.author}</p>
                <p><strong>Description:</strong> {book?.description}</p>
                <p><strong>Year:</strong> {book?.year}</p>
+               <p><strong>Genre:</strong> {book?.genre}</p>
             </Modal.Body>
          )}
          <Modal.Footer

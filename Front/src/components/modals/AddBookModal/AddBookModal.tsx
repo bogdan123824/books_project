@@ -15,6 +15,7 @@ type FormData = {
    author: string;
    description: string;
    year: number;
+   genre: string;
 };
 
 const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
@@ -24,7 +25,8 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
       title: "",
       author: "",
       description: "",
-      year: 0
+      year: 0,
+      genre: ""
    });
 
    useEffect(() => {
@@ -38,7 +40,8 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
          title: "",
          author: "",
          description: "",
-         year: 0
+         year: 0,
+         genre: ""
       });
    };
 
@@ -50,7 +53,8 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
             title: formData.title,
             author: formData.title,
             description: formData.description,
-            year: formData.year
+            year: formData.year,
+            genre: formData.genre
          });
 
          if (onBookUpdated) {
@@ -139,6 +143,16 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
                      value={formData.year}
                      onChange={handleInputChange}
                      placeholder="Enter year"
+                  />
+               </Form.Group>
+               <Form.Group className="mb-3 d-flex">
+                  <Form.Label className="me-2">Genre:</Form.Label>
+                  <Form.Control
+                     type="text"
+                     name="genre"
+                     value={formData.genre}
+                     onChange={handleInputChange}
+                     placeholder="Enter genre"
                   />
                </Form.Group>
             </Form>

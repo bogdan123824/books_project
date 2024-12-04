@@ -5,7 +5,7 @@ width: 100%;
 display: flex;
 justify-content: center;
 background-color: rgb(23, 25, 27);
-height: 92vh;
+height: 100vh;
 `;
 
 export const BooksPageContainer = styled.div`
