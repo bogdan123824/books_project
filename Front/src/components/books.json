@@ -1,0 +1,37 @@
+[
+    {
+      "id": 1,
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "description": "A novel about the American dream and the roaring twenties.",
+      "year": 1925
+    },
+    {
+      "id": 2,
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "description": "A profound exploration of moral nature and social justice.",
+      "year": 1960
+    },
+    {
+      "id": 3,
+      "title": "1984",
+      "author": "George Orwell",
+      "description": "A dystopian story about totalitarian government and surveillance.",
+      "year": 1949
+    },
+    {
+      "id": 4,
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "description": "A classic romantic novel of manners and society.",
+      "year": 1813
+    },
+    {
+      "id": 5,
+      "title": "Moby-Dick",
+      "author": "Herman Melville",
+      "description": null,
+      "year": 1851
+    }
+  ]
