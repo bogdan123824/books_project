@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi import Form
+from fastapi.middleware.cors import CORSMiddleware
 
 DATABASE_URL = "sqlite:///./library.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -17,8 +18,9 @@ class Book(Base):
     id = Column(Integer,primary_key =True, index=True)
     title = Column(String, index=True)
     author = Column(String, index=True)
-    text = Column(String, nullable=True)
-    year = Column(Integer)
+    description = Column(String, nullable=True)
+    year = Column(Integer,nullable=True)
+    genre = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,13 +28,25 @@ class BookSchema(BaseModel):
     id: Optional[int] = None
     title: str
     author: str
-    text: Optional[str] = None
+    description: Optional[str] = None
     year: Optional[int] = None
+    genre: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 app = FastAPI()
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:8000",
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 def get_db():
     db = SessionLocal()
     try:
@@ -66,15 +80,17 @@ async def search_books(
 async def add_books(
         title: str = Form,
         author: str = Form,
-        text: str = Form,
-        year: int = Form,
+        description: str = Form(None),
+        year: int = Form(None),
+        genre: str = Form,
         db: Session = Depends(get_db),
 ):
     book = Book(
         title = title,
         author = author,
-        text = text,
+        description = description,
         year = year,
+        genre = genre,
     )
     db.add(book)
     db.commit()
@@ -94,8 +110,9 @@ async def edit_book(
 
     existing_book.title = book.title
     existing_book.author = book.author
-    existing_book.text = book.text
+    existing_book.description = book.description
     existing_book.year = book.year
+    existing_book.genre = book.genre
 
     db.commit()
     db.refresh(existing_book)
