@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import { Modal, Button, Form, Spinner, Alert } from 'react-bootstrap';
 
 import axios from 'axios';
 
-import "./../Modal.css";
+import './../Modal.css';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faPlus, faEraser } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faPlus, faEraser } from '@fortawesome/free-solid-svg-icons';
 
 import { apiUrl } from '../../config.ts';
 
@@ -14,18 +14,19 @@ type FormData = {
    title: string;
    author: string;
    description: string;
-   year: number;
+   year: number | string; 
    genre: string;
 };
 
 const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
-   const [loading, setLoading] = useState(false);
+   const [loading, setLoading] = useState(false); 
+   const [error, setError] = useState<string | null>(null); 
 
    const [formData, setFormData] = useState<FormData>({
       title: "",
       author: "",
       description: "",
-      year: 0,
+      year: "",
       genre: ""
    });
 
@@ -40,40 +41,81 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
          title: "",
          author: "",
          description: "",
-         year: 0,
+         year: "",
          genre: ""
       });
+      setError(null);
+   };
+
+   const validateInputs = (): boolean => {
+      if (
+         !formData.title.trim() ||
+         !formData.author.trim() ||
+         !formData.description.trim() ||
+         !formData.genre.trim()
+      ) {
+         setError("All fields must be filled in without spaces");
+         return false;
+      }
+
+      if (/\d/.test(formData.author)) {
+         setError("Author should not contain numbers.");
+         return false;
+       }
+
+      const year = Number(formData.year);
+      if (isNaN(year) || year < 1700 || year > new Date().getFullYear()) {
+         setError("Year must be a number from 1700 to the current year");
+         return false;
+      }
+
+      if (formData.year.toString().length > 4) {
+         setError("Year must not exceed 4 digits");
+         return false;
+      }
+
+      if (/\d/.test(formData.genre)) {
+         setError("Genre should not contain numbers");
+         return false;
+      }
+
+      setError(null); 
+      return true;
    };
 
    const handleConfirm = async () => {
+      if (!validateInputs()) {
+         return; 
+      }
+
       setLoading(true);
-   
+
       try {
          const data = {
-            title: formData.title,
-            author: formData.author,
-            description: formData.description,
-            year: formData.year,
-            genre: formData.genre,
+            title: formData.title.trim(),
+            author: formData.author.trim(),
+            description: formData.description.trim(),
+            year: Number(formData.year), 
+            genre: formData.genre.trim(),
          };
-   
+
          const params = new URLSearchParams();
          params.append('title', data.title);
          params.append('author', data.author);
          params.append('description', data.description);
          params.append('year', data.year.toString());
          params.append('genre', data.genre);
-   
+
          const response = await axios.post(`${apiUrl}/add_book`, params, {
             headers: {
                'Content-Type': 'application/x-www-form-urlencoded',
             },
          });
-   
+
          if (onBookUpdated) {
             onBookUpdated(response.data);
          }
-   
+
          handleClear();
          handleClose();
       } catch (error) {
@@ -85,9 +127,26 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
 
    const handleInputChange = (e) => {
       const { name, value } = e.target;
+
+      if (name === "author" && /\d/.test(value)) {
+         return;
+      }
+
+      if (name === "year" && value !== "" && !/^\d*$/.test(value)) {
+         return;
+      }
+
+      if (name === "year" && value.length > 4) {
+         return; 
+      }
+
+      if (name === "genre" && /\d/.test(value)) {
+         return;
+      }
+
       setFormData((prev) => ({
          ...prev,
-         [name]: value,
+         [name]: value.trimStart(), 
       }));
    };
 
@@ -117,6 +176,7 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
             />
          </Modal.Header>
          <Modal.Body className='Dark'>
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form>
                <Form.Group className="mb-3 d-flex">
                   <Form.Label className="me-2">Title:</Form.Label>
