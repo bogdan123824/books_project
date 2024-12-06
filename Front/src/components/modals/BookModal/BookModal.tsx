@@ -17,7 +17,7 @@ type FormData = {
   title: string;
   author: string;
   description: string;
-  year: string; 
+  year: string;
   genre: string;
 };
 
@@ -61,6 +61,7 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
   const handleConfirm = async () => {
     setLoading(true);
 
+    const token = localStorage.getItem("token");
     try {
       if (currentState === "edit") {
         const data = {
@@ -74,22 +75,24 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
         await axios.put(`${apiUrl}/edit_book/${book.id}`, data, {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
         });
 
-        onBookUpdated(); 
+        onBookUpdated();
         handleClose();
       } else if (currentState === "delete") {
-        await axios.delete(`${apiUrl}/delete_book/${book.id}`);
-        onBookUpdated(); 
+        await axios.delete(`${apiUrl}/delete_book/${book.id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        onBookUpdated();
         handleClose();
       }
     } catch (error) {
-      console.error(
-        `Error ${currentState === "edit" ? "updating" : "deleting"} book:`,
-        error
-      );
-      alert(`Failed to ${currentState === "edit" ? "update" : "delete"} book.`);
+      console.error(`Error ${currentState === "edit" ? "updating" : "deleting"} book:`, error);
     } finally {
       setLoading(false);
     }
@@ -215,8 +218,8 @@ const BookModal = ({ show, handleClose, book, onBookUpdated }) => {
           {currentState === "delete"
             ? "Deleting..."
             : currentState === "edit"
-            ? "Editing..."
-            : ""}
+              ? "Editing..."
+              : ""}
         </span>
         {currentState === "default" ? (
           <div>

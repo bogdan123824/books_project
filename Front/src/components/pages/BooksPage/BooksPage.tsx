@@ -1,16 +1,19 @@
 import React, { FC, useState, useEffect } from 'react';
 import {
-   BooksPageWrapper,
-   BooksPageContainer,
    ButtonsContainer,
    BooksHeaderContainer,
    BooksHeader,
    BooksSortContainer
 } from './BooksPage.ts';
+import {
+   PageWrapper,
+   PageContainer
+} from '../Page.styled.ts';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowsRotate, faPlus, faBook } from '@fortawesome/free-solid-svg-icons'
+import { faArrowsRotate, faPlus } from '@fortawesome/free-solid-svg-icons'
 
 import { Table, Button, Spinner, Dropdown, DropdownButton, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -43,11 +46,18 @@ const BooksPage: FC<BooksPageProps> = () => {
    const [showEditModal, setShowEditModal] = useState(false);
    const [showAddModal, setShowAddModal] = useState(false);
 
+   const navigate = useNavigate();
+
    const fetchBooks = async () => {
       setLoading(true);
 
       try {
-         const response = await axios.get<Book[]>(`${apiUrl}/all_books/`);
+         const token = localStorage.getItem("token"); 
+         const response = await axios.get<Book[]>(`${apiUrl}/all_books/`, {
+            headers: {
+               "Authorization": `Bearer ${token}`
+            }
+         });
 
          setBooks(response.data);
       } catch (error) {
@@ -58,7 +68,13 @@ const BooksPage: FC<BooksPageProps> = () => {
    };
 
    useEffect(() => {
-      fetchBooks();
+      const token = localStorage.getItem("token");
+      if (!token) {
+         navigate('/');
+      }
+      else {
+         fetchBooks();
+      }
    }, []);
 
    const updateBookList = () => {
@@ -111,9 +127,8 @@ const BooksPage: FC<BooksPageProps> = () => {
       });
 
    return (
-      <BooksPageWrapper>
-         <BooksPageContainer>
-            <BooksHeader><FontAwesomeIcon icon={faBook} />  Books management</BooksHeader>
+      <PageWrapper>
+         <PageContainer>
             <BooksHeaderContainer>
                <BooksSortContainer>
                   <BooksHeader style={{ fontSize: "95%" }}>Sort by</BooksHeader>
@@ -178,7 +193,7 @@ const BooksPage: FC<BooksPageProps> = () => {
                         >
                            <td>{book.title}</td>
                            <td>{book.author}</td>
-                           <td style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "340px"}}>{book.description}</td>
+                           <td style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "340px" }}>{book.description}</td>
                            <td>{book.year}</td>
                            <td>{book.genre}</td>
                         </tr>
@@ -197,8 +212,8 @@ const BooksPage: FC<BooksPageProps> = () => {
                handleClose={handleCloseAddModal}
                onBookUpdated={updateBookList}
             />
-         </BooksPageContainer>
-      </BooksPageWrapper >
+         </PageContainer>
+      </PageWrapper >
    );
 };
 
