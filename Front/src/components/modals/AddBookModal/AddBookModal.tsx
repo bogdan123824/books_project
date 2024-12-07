@@ -87,9 +87,9 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
       if (!validateInputs()) {
          return; 
       }
-
+   
       setLoading(true);
-
+   
       try {
          const data = {
             title: formData.title.trim(),
@@ -98,32 +98,37 @@ const AddBookModal = ({ show, handleClose, onBookUpdated }) => {
             year: Number(formData.year), 
             genre: formData.genre.trim(),
          };
-
+   
          const params = new URLSearchParams();
          params.append('title', data.title);
          params.append('author', data.author);
          params.append('description', data.description);
          params.append('year', data.year.toString());
          params.append('genre', data.genre);
-
+   
+         const token = localStorage.getItem("token"); 
+   
          const response = await axios.post(`${apiUrl}/add_book`, params, {
             headers: {
                'Content-Type': 'application/x-www-form-urlencoded',
+               'Authorization': `Bearer ${token}`, 
             },
          });
-
+   
          if (onBookUpdated) {
             onBookUpdated(response.data);
          }
-
+   
          handleClear();
          handleClose();
       } catch (error) {
          console.error("Error adding book:", error);
+         setError("Failed to add book. Please try again.");
       } finally {
          setLoading(false);
       }
    };
+   
 
    const handleInputChange = (e) => {
       const { name, value } = e.target;
